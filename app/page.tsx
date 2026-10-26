@@ -7,9 +7,16 @@ export const dynamic = "force-dynamic";
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ recepcion?: string; tercero?: string; respuesta?: string }>;
+  searchParams: Promise<{
+    recepcion?: string;
+    tercero?: string;
+    respuesta?: string;
+    requerimiento?: string;
+    subsanacion?: string;
+  }>;
 }) {
-  const { recepcion, tercero, respuesta } = await searchParams;
+  const { recepcion, tercero, respuesta, requerimiento, subsanacion } = await searchParams;
+  const fecha = (f?: string) => (f && esFechaValida(f) ? f : "");
   const hoy = hoyEnChile();
   const inicial = recepcion && esFechaValida(recepcion) ? recepcion : hoy;
 
@@ -26,14 +33,16 @@ export default async function Page({
       <Calculadora
         recepcionInicial={inicial}
         hoy={hoy}
-        terceroInicial={tercero && esFechaValida(tercero) ? tercero : ""}
-        respuestaInicial={respuesta && esFechaValida(respuesta) ? respuesta : ""}
+        terceroInicial={fecha(tercero)}
+        respuestaInicial={fecha(respuesta)}
+        requerimientoInicial={fecha(requerimiento)}
+        subsanacionInicial={fecha(subsanacion)}
       />
       <footer className="pie">
         <p>
           Se cuentan días hábiles desde el día siguiente a la recepción, excluyendo sábados,
           domingos y feriados nacionales (art.&nbsp;1 N°3, Ley&nbsp;20.285, y art.&nbsp;25, Ley&nbsp;19.880). No considera feriados
-          regionales ni suspensiones del plazo, como la subsanación del art.&nbsp;12.
+          regionales ni la suspensión del plazo mientras se pagan costos de reproducción.
         </p>
         <p>
           Herramienta de apoyo: confirma siempre el plazo con tu procedimiento interno. API

@@ -71,3 +71,35 @@ describe("calcularHitos", () => {
     expect(hitos).toHaveLength(7);
   });
 });
+
+describe("calcularHitos con subsanación", () => {
+  const recepcion = "2026-10-05";
+
+  it("mientras se espera la subsanación, solo muestra terceros y el límite para subsanar", () => {
+    const { hitos } = calcularHitos(recepcion, { requerimientoSubsanacion: "2026-10-06" });
+    expect(hitos.map((h) => [h.id, h.fecha])).toEqual([
+      ["comunicar-terceros", "2026-10-07"],
+      ["limite-subsanacion", "2026-10-14"],
+    ]);
+  });
+
+  it("una vez subsanada, los hitos del art. 14 se cuentan desde la subsanación", () => {
+    const { hitos } = calcularHitos(recepcion, {
+      requerimientoSubsanacion: "2026-10-06",
+      subsanacion: "2026-10-13",
+    });
+    expect(fechaDe(hitos, "limite-subsanacion")).toBe("2026-10-14");
+    expect(fechaDe(hitos, "aviso-prorroga")).toBe("2026-11-10");
+    // El plazo de terceros sigue contándose desde la recepción (art. 20).
+    expect(fechaDe(hitos, "comunicar-terceros")).toBe("2026-10-07");
+  });
+
+  it("el amparo contra la respuesta no depende de la subsanación", () => {
+    const { hitos } = calcularHitos(recepcion, {
+      requerimientoSubsanacion: "2026-10-06",
+      notificacionRespuesta: "2026-10-30",
+    });
+    expect(fechaDe(hitos, "amparo-respuesta")).toBe("2026-11-20");
+    expect(fechaDe(hitos, "aviso-prorroga")).toBeUndefined();
+  });
+});

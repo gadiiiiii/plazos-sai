@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   aCSV,
+  textoEstado,
   agregarSinDuplicados,
   contarPorGrupo,
   esListaValida,
@@ -52,6 +53,7 @@ describe("evaluar", () => {
       diasRestantes: null,
       fueraDePlazo: true,
       amparoHasta: "2026-11-26",
+      limiteSubsanacion: undefined,
     });
     const aTiempo = evaluar({ ...respondida, prorrogada: true, respuesta: "2026-11-10" }, HOY);
     expect(aTiempo.fueraDePlazo).toBe(false);
@@ -73,7 +75,7 @@ describe("ordenarPorUrgencia y contarPorGrupo", () => {
   });
 
   it("cuenta por grupo", () => {
-    expect(contarPorGrupo(lista, HOY)).toEqual({ vencida: 1, pronto: 1, "al-dia": 1, respondida: 1 });
+    expect(contarPorGrupo(lista, HOY)).toEqual({ vencida: 1, pronto: 1, "al-dia": 1, subsanacion: 0, respondida: 1 });
   });
 });
 
@@ -151,14 +153,52 @@ describe("aCSV", () => {
     const csv = aCSV([alDia, sai("MU;RARO", "2026-10-05", { prorrogada: true })], HOY);
     const lineas = csv.split("\r\n");
     expect(lineas[0]).toBe(
-      "Folio;Recepción;Vence;Vence con prórroga;Prorrogada;Respuesta;Estado;Días hábiles restantes;Respondida fuera de plazo;Amparo hasta",
+      "Folio;Recepción;Requerimiento de subsanación;Subsanación;Vence;Vence con prórroga;Prorrogada;Respuesta;Estado;Días hábiles restantes;Respondida fuera de plazo;Amparo hasta",
     );
-    expect(lineas[1]).toBe("A-AL-DIA;05-10-2026;03-11-2026;17-11-2026;No;;Al día;6;;");
-    expect(lineas[2]).toBe('"MU;RARO";05-10-2026;03-11-2026;17-11-2026;Sí;;Al día;16;;');
+    expect(lineas[1]).toBe("A-AL-DIA;05-10-2026;;;03-11-2026;17-11-2026;No;;Al día;6;;");
+    expect(lineas[2]).toBe('"MU;RARO";05-10-2026;;;03-11-2026;17-11-2026;Sí;;Al día;16;;');
   });
 
   it("incluye respuesta, fuera de plazo y amparo para las respondidas", () => {
     const linea = aCSV([respondida], HOY).split("\r\n")[1];
-    expect(linea).toBe("D-RESP;05-10-2026;03-11-2026;17-11-2026;No;05-11-2026;Respondida;;Sí;26-11-2026");
+    expect(linea).toBe("D-RESP;05-10-2026;;;03-11-2026;17-11-2026;No;05-11-2026;Respondida;;Sí;26-11-2026");
+  });
+});
+
+describe("seguimiento con subsanación", () => {
+  // Recepción 5-oct; requerimiento notificado el 6-oct: puede subsanar hasta el 14-oct.
+  const esperando = sai("F-ESPERA", "2026-10-05", { requerimiento: "2026-10-06" });
+  const subsanada = sai("G-SUBSANADA", "2026-10-05", { requerimiento: "2026-10-06", subsanacion: "2026-10-13" });
+
+  it("mientras se espera la subsanación, el plazo no corre", () => {
+    const e = evaluar(esperando, "2026-10-09");
+    expect(e).toMatchObject({ grupo: "subsanacion", vence: null, diasRestantes: 2, desistida: false });
+    expect(textoEstado(e)).toBe("En subsanación");
+  });
+
+  it("si pasó el plazo para subsanar, queda como desistida", () => {
+    const e = evaluar(esperando, HOY);
+    expect(e).toMatchObject({ grupo: "subsanacion", desistida: true, limiteSubsanacion: "2026-10-14" });
+    expect(textoEstado(e)).toBe("Desistida");
+  });
+
+  it("una vez subsanada, vence 20 días hábiles después de la subsanación", () => {
+    expect(evaluar(subsanada, HOY)).toMatchObject({ grupo: "al-dia", vence: "2026-11-10", diasRestantes: 11 });
+  });
+
+  it("las que esperan subsanación van después de las al día y antes de las respondidas", () => {
+    const folios = ordenarPorUrgencia([respondida, esperando, alDia], HOY).map((x) => x.solicitud.folio);
+    expect(folios).toEqual(["A-AL-DIA", "F-ESPERA", "D-RESP"]);
+  });
+
+  it("valida las fechas de subsanación guardadas", () => {
+    expect(esListaValida([subsanada])).toBe(true);
+    expect(esListaValida([{ ...subsanada, subsanacion: "13-10-2026" }])).toBe(false);
+  });
+
+  it("exporta las fechas de subsanación y deja el vencimiento vacío si el plazo no corre", () => {
+    const csv = aCSV([esperando, subsanada], HOY).split("\r\n");
+    expect(csv[1]).toBe("G-SUBSANADA;05-10-2026;06-10-2026;13-10-2026;10-11-2026;24-11-2026;No;;Al día;11;;");
+    expect(csv[2]).toBe("F-ESPERA;05-10-2026;06-10-2026;;;;No;;Desistida;;;");
   });
 });

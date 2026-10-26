@@ -89,18 +89,28 @@ export default function Hitos({
   hoy,
   terceroInicial,
   respuestaInicial,
+  requerimiento,
+  subsanacion,
 }: {
   recepcion: string;
   hoy: string;
   terceroInicial: string;
   respuestaInicial: string;
+  requerimiento: string;
+  subsanacion: string;
 }) {
   const [tercero, setTercero] = useState(terceroInicial);
   const [respuesta, setRespuesta] = useState(respuestaInicial);
 
   const { hitos, avisos } = useMemo(
-    () => calcularHitos(recepcion, { entregaCorreosTercero: tercero, notificacionRespuesta: respuesta }),
-    [recepcion, tercero, respuesta],
+    () =>
+      calcularHitos(recepcion, {
+        entregaCorreosTercero: tercero,
+        notificacionRespuesta: respuesta,
+        requerimientoSubsanacion: requerimiento,
+        subsanacion,
+      }),
+    [recepcion, tercero, respuesta, requerimiento, subsanacion],
   );
 
   return (

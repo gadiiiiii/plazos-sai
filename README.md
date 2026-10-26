@@ -24,13 +24,28 @@ También tiene una página de **seguimiento** para llevar varias SAI a la vez, o
 - Son inhábiles los **sábados, domingos y feriados nacionales**.
 - Los feriados están en [`lib/feriados.ts`](lib/feriados.ts) para 2025, 2026 y 2027. Si el cálculo cae en un año no cargado, la app lo advierte.
 
-**No considera**: feriados regionales ni suspensiones del plazo (por ejemplo, mientras se espera la subsanación del art. 12). Es una herramienta de apoyo; confirma siempre con tu procedimiento interno.
+**No considera**: feriados regionales ni la suspensión del plazo mientras se pagan costos de reproducción. Es una herramienta de apoyo; confirma siempre con tu procedimiento interno.
+
+## Subsanación
+
+Si la solicitud no cumple los requisitos (art. 12, Ley 20.285), se le pide al solicitante que subsane. Según la Instrucción General N°10 del Consejo para la Transparencia, numeral 2.2:
+
+- El solicitante tiene **5 días hábiles** desde que se le notifica el requerimiento.
+- Si subsana a tiempo, los plazos del art. 14 (20 días hábiles y la prórroga) **empiezan a correr desde la subsanación**, no desde la recepción.
+- Si no subsana a tiempo, se le tiene por desistido.
+
+En la calculadora y en el seguimiento puedes ingresar la fecha del requerimiento y la de la subsanación. Mientras se espera, la app muestra hasta cuándo puede subsanar en vez de un vencimiento; una vez subsanada, recalcula todo desde esa fecha. Si la subsanación llega fuera de plazo, lo advierte y calcula igual desde la subsanación, por si se decide tramitarla.
+
+El plazo para comunicar a terceros (art. 20) se sigue contando desde la recepción, como dice la ley.
+
+![Plazo contado desde la subsanación](docs/subsanacion.png)
 
 ## Hitos del procedimiento
 
 | Hito | Cómo se calcula | Norma |
 |---|---|---|
 | Último día para comunicar a terceros | Recepción + 2 días hábiles | Art. 20, Ley 20.285 |
+| Último día para subsanar *(si se pidió)* | Requerimiento + 5 días hábiles | Art. 12, Ley 20.285 |
 | Aviso de prórroga | Antes de que termine el día 20 | Art. 14, Ley 20.285 |
 | Fin del plazo de amparo sin respuesta | Vencimiento (20 o 30 días) + 15 días hábiles | Art. 24, Ley 20.285 |
 | Tercero notificado *(opcional)* | Entrega en Correos + 3 días hábiles | Art. 46, Ley 19.880 |
@@ -46,7 +61,8 @@ Los hitos opcionales aparecen al ingresar la fecha de entrega de la carta en Cor
 En `/seguimiento` puedes llevar todas las SAI en trámite:
 
 - Agrega una por una (folio y fecha de recepción) o **pega varias filas desde Excel**. Acepta columnas separadas por tabulación, punto y coma o coma, fechas como `05-10-2026`, `5/10/2026` o `2026-10-05`, y una tercera columna opcional con la fecha de respuesta. Omite el encabezado y los folios repetidos, e indica qué líneas no pudo leer.
-- Se ordenan por urgencia: **vencidas**, **vencen pronto** (5 días hábiles o menos), **al día** y **respondidas**. Los contadores sirven de filtro.
+- Se ordenan por urgencia: **vencidas**, **vencen pronto** (5 días hábiles o menos), **al día**, **en subsanación** y **respondidas**. Los contadores sirven de filtro.
+- Registra el requerimiento de subsanación y la fecha en que se subsanó: mientras se espera, la solicitud muestra hasta cuándo puede subsanar, y si pasa el plazo queda como desistida.
 - Marca si se prorrogó y la fecha de respuesta. Las respondidas muestran hasta cuándo hay plazo de amparo y si se respondió fuera de plazo.
 - **Exporta a CSV** con punto y coma y fechas `DD-MM-AAAA`, para que Excel en español lo abra en columnas.
 
@@ -60,20 +76,25 @@ La lista se guarda en el `localStorage` del navegador: no hay servidor ni base d
 GET /api/plazo?recepcion=2026-10-05
 GET /api/plazo?recepcion=2026-10-05&hoy=2026-10-26
 GET /api/plazo?recepcion=2026-10-05&tercero=2026-10-07&respuesta=2026-10-30
+GET /api/plazo?recepcion=2026-10-05&requerimiento=2026-10-06&subsanacion=2026-10-13
 ```
+
+`requerimiento` es la fecha en que se notificó el requerimiento de subsanación y `subsanacion` la fecha en que el solicitante subsanó. Si se pidió subsanar y todavía no se subsana, el plazo no corre y los campos de vencimiento vienen en `null`; `inicioComputo` indica desde qué fecha se cuenta el plazo.
 
 `tercero` es la fecha de entrega en Correos de la carta al tercero y `respuesta` la fecha en que se notificó la respuesta. Ambos son opcionales. Ejemplo de respuesta (abreviada):
 
 ```json
 {
   "recepcion": "2026-10-05",
+  "hoy": "2026-10-26",
+  "inicioComputo": "2026-10-05",
+  "subsanacion": { "tipo": "no-aplica", "inicio": "2026-10-05" },
   "vencimiento": "2026-11-03",
   "vencimientoProrroga": "2026-11-17",
   "diasRestantes": 6,
   "diasRestantesProrroga": 16,
   "feriadosEnRango": [{ "fecha": "2026-10-12", "motivo": "feriado", "nombre": "Encuentro de Dos Mundos" }],
   "fueraDeCobertura": false,
-  "hoy": "2026-10-26",
   "hitos": [
     {
       "id": "comunicar-terceros",
@@ -93,7 +114,7 @@ Una fecha inválida devuelve `400` con un mensaje de error.
 - [Next.js](https://nextjs.org) (App Router) + TypeScript
 - [Vitest](https://vitest.dev) para los tests de la lógica de días hábiles y de los hitos
 - GitHub Actions corre los tests y el build en cada push
-- Sin base de datos: la lógica vive en [`lib/plazos.ts`](lib/plazos.ts), [`lib/hitos.ts`](lib/hitos.ts) y [`lib/seguimiento.ts`](lib/seguimiento.ts), separada de la interfaz y cubierta por tests
+- Sin base de datos: la lógica vive en [`lib/plazos.ts`](lib/plazos.ts), [`lib/hitos.ts`](lib/hitos.ts), [`lib/subsanacion.ts`](lib/subsanacion.ts) y [`lib/seguimiento.ts`](lib/seguimiento.ts), separada de la interfaz y cubierta por tests
 
 ## Desarrollo local
 

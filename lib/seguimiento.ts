@@ -1,5 +1,6 @@
 import { DIAS_AMPARO } from "./hitos";
 import { calcularPlazo, diasHabilesEntre, esFechaValida, sumarDiasHabiles } from "./plazos";
+import { analizarSubsanacion, esperaSubsanacion } from "./subsanacion";
 
 /**
  * Seguimiento de varias SAI a la vez: estado de cada una respecto de hoy,
@@ -16,16 +17,21 @@ export interface Solicitud {
   prorrogada: boolean;
   /** Fecha en que se notificó la respuesta, si ya se respondió. */
   respuesta?: string;
+  /** Fecha en que se notificó al solicitante el requerimiento de subsanar. */
+  requerimiento?: string;
+  /** Fecha en que el solicitante subsanó. */
+  subsanacion?: string;
 }
 
-export type Grupo = "vencida" | "pronto" | "al-dia" | "respondida";
+export type Grupo = "vencida" | "pronto" | "al-dia" | "subsanacion" | "respondida";
 
-export const ORDEN_GRUPOS: Grupo[] = ["vencida", "pronto", "al-dia", "respondida"];
+export const ORDEN_GRUPOS: Grupo[] = ["vencida", "pronto", "al-dia", "subsanacion", "respondida"];
 
 export const NOMBRE_GRUPO: Record<Grupo, string> = {
   vencida: "Vencidas",
   pronto: "Vencen pronto",
   "al-dia": "Al día",
+  subsanacion: "En subsanación",
   respondida: "Respondidas",
 };
 
@@ -34,43 +40,75 @@ export const ESTADO: Record<Grupo, string> = {
   vencida: "Vencida",
   pronto: "Vence pronto",
   "al-dia": "Al día",
+  subsanacion: "En subsanación",
   respondida: "Respondida",
 };
 
 export interface Evaluacion {
   grupo: Grupo;
-  /** Vencimiento que aplica: con prórroga si se prorrogó. */
-  vence: string;
-  /** Días hábiles hasta `vence` (negativo si venció). null si ya se respondió. */
+  /**
+   * Vencimiento que aplica: con prórroga si se prorrogó, y contado desde la
+   * subsanación si la hubo. null si se espera la subsanación (el plazo no corre).
+   */
+  vence: string | null;
+  /**
+   * Días hábiles hasta `vence` (negativo si venció). En el grupo "subsanacion",
+   * días que le quedan al solicitante para subsanar. null si ya se respondió.
+   */
   diasRestantes: number | null;
   /** true si la respuesta se notificó después del vencimiento. */
   fueraDePlazo: boolean;
   /** Último día para reclamar ante el CPLT contra la respuesta. */
   amparoHasta?: string;
+  /** Último día para subsanar, si se pidió subsanación. */
+  limiteSubsanacion?: string;
+  /** true si se esperaba la subsanación y pasó el plazo: se tiene por desistida. */
+  desistida?: boolean;
 }
 
 export function evaluar(s: Solicitud, hoy: string): Evaluacion {
-  const plazo = calcularPlazo(s.recepcion);
-  const vence = s.prorrogada ? plazo.vencimientoProrroga : plazo.vencimiento;
+  const { subsanacion: sub } = analizarSubsanacion(s.recepcion, {
+    requerimiento: s.requerimiento,
+    subsanacion: s.subsanacion,
+  });
+  const limiteSubsanacion = sub.tipo === "no-aplica" ? undefined : sub.limite;
+
+  let vence: string | null = null;
+  if (sub.inicio) {
+    const plazo = calcularPlazo(sub.inicio);
+    vence = s.prorrogada ? plazo.vencimientoProrroga : plazo.vencimiento;
+  }
 
   if (s.respuesta) {
     return {
       grupo: "respondida",
       vence,
       diasRestantes: null,
-      fueraDePlazo: s.respuesta > vence,
+      fueraDePlazo: vence !== null && s.respuesta > vence,
       amparoHasta: sumarDiasHabiles(s.respuesta, DIAS_AMPARO),
+      limiteSubsanacion,
     };
+  }
+
+  if (vence === null) {
+    const { diasRestantes, desistida } = esperaSubsanacion(limiteSubsanacion!, hoy);
+    return { grupo: "subsanacion", vence, diasRestantes, fueraDePlazo: false, limiteSubsanacion, desistida };
   }
 
   const diasRestantes = diasHabilesEntre(hoy, vence);
   const grupo: Grupo = diasRestantes < 0 ? "vencida" : diasRestantes <= DIAS_PRONTO ? "pronto" : "al-dia";
-  return { grupo, vence, diasRestantes, fueraDePlazo: false };
+  return { grupo, vence, diasRestantes, fueraDePlazo: false, limiteSubsanacion };
+}
+
+/** Texto del estado de una solicitud, distinguiendo las que se tienen por desistidas. */
+export function textoEstado(e: Evaluacion): string {
+  return e.desistida ? "Desistida" : ESTADO[e.grupo];
 }
 
 /**
  * Ordena por urgencia: vencidas (la más atrasada primero), vencen pronto y al día
- * (la más próxima primero), respondidas (la más reciente primero).
+ * (la más próxima primero), en subsanación (la que vence antes primero) y
+ * respondidas (la más reciente primero).
  */
 export function ordenarPorUrgencia(lista: Solicitud[], hoy: string) {
   return lista
@@ -81,13 +119,14 @@ export function ordenarPorUrgencia(lista: Solicitud[], hoy: string) {
       if (a.evaluacion.grupo === "respondida") {
         return (b.solicitud.respuesta ?? "").localeCompare(a.solicitud.respuesta ?? "");
       }
-      const d = a.evaluacion.vence.localeCompare(b.evaluacion.vence);
+      const fecha = (e: Evaluacion) => e.vence ?? e.limiteSubsanacion ?? "";
+      const d = fecha(a.evaluacion).localeCompare(fecha(b.evaluacion));
       return d !== 0 ? d : a.solicitud.folio.localeCompare(b.solicitud.folio);
     });
 }
 
 export function contarPorGrupo(lista: Solicitud[], hoy: string): Record<Grupo, number> {
-  const conteo: Record<Grupo, number> = { vencida: 0, pronto: 0, "al-dia": 0, respondida: 0 };
+  const conteo: Record<Grupo, number> = { vencida: 0, pronto: 0, "al-dia": 0, subsanacion: 0, respondida: 0 };
   for (const s of lista) conteo[evaluar(s, hoy).grupo]++;
   return conteo;
 }
@@ -190,6 +229,10 @@ export function agregarSinDuplicados(
   return { lista: resultado, duplicados };
 }
 
+function fechaOpcionalValida(valor: unknown) {
+  return valor === undefined || (typeof valor === "string" && esFechaValida(valor));
+}
+
 /** Valida datos leídos del almacenamiento del navegador. */
 export function esListaValida(datos: unknown): datos is Solicitud[] {
   return (
@@ -203,7 +246,9 @@ export function esListaValida(datos: unknown): datos is Solicitud[] {
         typeof s.recepcion === "string" &&
         esFechaValida(s.recepcion) &&
         typeof s.prorrogada === "boolean" &&
-        (s.respuesta === undefined || (typeof s.respuesta === "string" && esFechaValida(s.respuesta))),
+        fechaOpcionalValida(s.respuesta) &&
+        fechaOpcionalValida(s.requerimiento) &&
+        fechaOpcionalValida(s.subsanacion),
     )
   );
 }
@@ -225,6 +270,8 @@ export function aCSV(lista: Solicitud[], hoy: string): string {
   const encabezado = [
     "Folio",
     "Recepción",
+    "Requerimiento de subsanación",
+    "Subsanación",
     "Vence",
     "Vence con prórroga",
     "Prorrogada",
@@ -234,19 +281,26 @@ export function aCSV(lista: Solicitud[], hoy: string): string {
     "Respondida fuera de plazo",
     "Amparo hasta",
   ];
+  const fecha = (f?: string | null) => (f ? fechaCL(f) : "");
   const filas = ordenarPorUrgencia(lista, hoy).map(({ solicitud: s, evaluacion: e }) => {
-    const plazo = calcularPlazo(s.recepcion);
+    const { subsanacion: sub } = analizarSubsanacion(s.recepcion, {
+      requerimiento: s.requerimiento,
+      subsanacion: s.subsanacion,
+    });
+    const plazo = sub.inicio ? calcularPlazo(sub.inicio) : null;
     return [
       s.folio,
       fechaCL(s.recepcion),
-      fechaCL(plazo.vencimiento),
-      fechaCL(plazo.vencimientoProrroga),
+      fecha(s.requerimiento),
+      fecha(s.subsanacion),
+      fecha(plazo?.vencimiento),
+      fecha(plazo?.vencimientoProrroga),
       s.prorrogada ? "Sí" : "No",
-      s.respuesta ? fechaCL(s.respuesta) : "",
-      ESTADO[e.grupo],
-      e.diasRestantes === null ? "" : String(e.diasRestantes),
+      fecha(s.respuesta),
+      textoEstado(e),
+      e.diasRestantes === null || e.grupo === "subsanacion" ? "" : String(e.diasRestantes),
       s.respuesta ? (e.fueraDePlazo ? "Sí" : "No") : "",
-      e.amparoHasta ? fechaCL(e.amparoHasta) : "",
+      fecha(e.amparoHasta),
     ];
   });
   return [encabezado, ...filas].map((f) => f.map(celdaCSV).join(";")).join("\r\n");

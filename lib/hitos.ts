@@ -1,4 +1,5 @@
 import { calcularPlazo, esFechaValida, sumarDiasHabiles } from "./plazos";
+import { analizarSubsanacion } from "./subsanacion";
 
 /**
  * Hitos del procedimiento de una SAI, además del vencimiento.
@@ -14,6 +15,9 @@ import { calcularPlazo, esFechaValida, sumarDiasHabiles } from "./plazos";
  *   Consejo para la Transparencia, desde que se le notifica la denegación o
  *   desde que vence el plazo sin respuesta. Se cuentan como días hábiles
  *   (art. 25, Ley 19.880).
+ * - Art. 12, Ley 20.285 e Instrucción General N°10: si se pidió subsanar, el
+ *   solicitante tiene 5 días hábiles y los plazos del art. 14 corren desde la
+ *   subsanación. Mientras no subsane, no hay hitos del art. 14.
  */
 
 export const DIAS_COMUNICAR_TERCEROS = 2;
@@ -23,6 +27,7 @@ export const DIAS_AMPARO = 15;
 
 export type IdHito =
   | "comunicar-terceros"
+  | "limite-subsanacion"
   | "notificacion-terceros"
   | "oposicion-terceros"
   | "aviso-prorroga"
@@ -43,6 +48,10 @@ export interface OpcionesHitos {
   entregaCorreosTercero?: string;
   /** Fecha en que se notificó la respuesta (o denegación) al solicitante. */
   notificacionRespuesta?: string;
+  /** Fecha en que se notificó al solicitante el requerimiento de subsanar. */
+  requerimientoSubsanacion?: string;
+  /** Fecha en que el solicitante subsanó. */
+  subsanacion?: string;
 }
 
 export interface ResultadoHitos {
@@ -52,9 +61,13 @@ export interface ResultadoHitos {
 }
 
 export function calcularHitos(recepcion: string, opciones: OpcionesHitos = {}): ResultadoHitos {
-  const { vencimiento, vencimientoProrroga } = calcularPlazo(recepcion);
   const limiteTerceros = sumarDiasHabiles(recepcion, DIAS_COMUNICAR_TERCEROS);
   const avisos: string[] = [];
+  // Los avisos de la subsanación los muestra quien la analiza; aquí solo importan las fechas.
+  const { subsanacion: sub } = analizarSubsanacion(recepcion, {
+    requerimiento: opciones.requerimientoSubsanacion,
+    subsanacion: opciones.subsanacion,
+  });
 
   const hitos: Hito[] = [
     {
@@ -65,31 +78,48 @@ export function calcularHitos(recepcion: string, opciones: OpcionesHitos = {}): 
         "Si la información puede afectar derechos de terceros, envíales carta certificada a más tardar este día.",
       norma: "Art. 20, Ley 20.285",
     },
-    {
-      id: "aviso-prorroga",
-      fecha: vencimiento,
-      titulo: "Plazo para avisar una prórroga",
-      detalle:
-        "La prórroga y sus fundamentos deben comunicarse al solicitante antes de que termine este día.",
-      norma: "Art. 14, Ley 20.285",
-    },
-    {
-      id: "amparo-sin-respuesta",
-      fecha: sumarDiasHabiles(vencimiento, DIAS_AMPARO),
-      titulo: "Fin del plazo de amparo si no hubo respuesta",
-      detalle:
-        "Sin respuesta ni prórroga, el solicitante puede reclamar ante el Consejo para la Transparencia hasta este día.",
-      norma: "Art. 24, Ley 20.285",
-    },
-    {
-      id: "amparo-sin-respuesta-prorroga",
-      fecha: sumarDiasHabiles(vencimientoProrroga, DIAS_AMPARO),
-      titulo: "Fin del plazo de amparo si hubo prórroga y no hubo respuesta",
-      detalle:
-        "Si se prorrogó y aun así no se respondió, el solicitante puede reclamar hasta este día.",
-      norma: "Art. 24, Ley 20.285",
-    },
   ];
+
+  if (sub.tipo !== "no-aplica") {
+    hitos.push({
+      id: "limite-subsanacion",
+      fecha: sub.limite,
+      titulo: "Último día para que el solicitante subsane",
+      detalle:
+        "Tiene 5 días hábiles desde que se le notificó el requerimiento. Si no subsana, se le tiene por desistido.",
+      norma: "Art. 12, Ley 20.285",
+    });
+  }
+
+  if (sub.inicio) {
+    const { vencimiento, vencimientoProrroga } = calcularPlazo(sub.inicio);
+    const desde = sub.tipo === "subsanada" ? " Se cuenta desde la subsanación." : "";
+    hitos.push(
+      {
+        id: "aviso-prorroga",
+        fecha: vencimiento,
+        titulo: "Plazo para avisar una prórroga",
+        detalle: `La prórroga y sus fundamentos deben comunicarse al solicitante antes de que termine este día.${desde}`,
+        norma: "Art. 14, Ley 20.285",
+      },
+      {
+        id: "amparo-sin-respuesta",
+        fecha: sumarDiasHabiles(vencimiento, DIAS_AMPARO),
+        titulo: "Fin del plazo de amparo si no hubo respuesta",
+        detalle:
+          "Sin respuesta ni prórroga, el solicitante puede reclamar ante el Consejo para la Transparencia hasta este día.",
+        norma: "Art. 24, Ley 20.285",
+      },
+      {
+        id: "amparo-sin-respuesta-prorroga",
+        fecha: sumarDiasHabiles(vencimientoProrroga, DIAS_AMPARO),
+        titulo: "Fin del plazo de amparo si hubo prórroga y no hubo respuesta",
+        detalle:
+          "Si se prorrogó y aun así no se respondió, el solicitante puede reclamar hasta este día.",
+        norma: "Art. 24, Ley 20.285",
+      },
+    );
+  }
 
   const { entregaCorreosTercero: entrega, notificacionRespuesta: respuesta } = opciones;
 

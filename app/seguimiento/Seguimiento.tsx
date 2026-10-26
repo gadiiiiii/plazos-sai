@@ -8,11 +8,11 @@ import {
   agregarSinDuplicados,
   contarPorGrupo,
   esListaValida,
-  ESTADO,
   NOMBRE_GRUPO,
   ORDEN_GRUPOS,
   ordenarPorUrgencia,
   parsearPegado,
+  textoEstado,
   type Evaluacion,
   type Grupo,
   type Solicitud,
@@ -57,6 +57,11 @@ function dias(n: number) {
 function detalleEstado(e: Evaluacion, hoy: string) {
   if (e.grupo === "respondida") return e.amparoHasta ? `Amparo hasta el ${formatoFecha(e.amparoHasta, hoy)}` : "";
   const n = e.diasRestantes ?? 0;
+  if (e.grupo === "subsanacion") {
+    if (e.desistida) return "No subsanó a tiempo";
+    if (n === 0) return "Hoy es el último día para subsanar";
+    return `Puede subsanar hasta el ${formatoFecha(e.limiteSubsanacion!, hoy)}`;
+  }
   if (n < 0) return `Venció hace ${dias(-n)}`;
   if (n === 0) return "Vence hoy";
   return `${n === 1 ? "Falta" : "Faltan"} ${dias(n)}`;
@@ -127,10 +132,18 @@ export default function Seguimiento({ hoy }: { hoy: string }) {
       l?.map((s) => {
         if (s.id !== id) return s;
         const nueva = { ...s, ...cambio };
-        if (!nueva.respuesta) delete nueva.respuesta;
+        if (!nueva.requerimiento) delete nueva.subsanacion;
+        for (const clave of ["respuesta", "requerimiento", "subsanacion"] as const) {
+          if (!nueva[clave]) delete nueva[clave];
+        }
         return nueva;
       }) ?? null,
     );
+  }
+
+  /** Acepta la fecha solo si es válida y no es anterior a `desde`. */
+  function fechaDesde(valor: string, desde: string) {
+    return esFechaValida(valor) && valor >= desde ? valor : undefined;
   }
 
   function eliminar(id: string) {
@@ -285,6 +298,7 @@ export default function Seguimiento({ hoy }: { hoy: string }) {
                     <tr>
                       <th scope="col">Folio</th>
                       <th scope="col">Recepción</th>
+                      <th scope="col">Subsanación</th>
                       <th scope="col">Vence</th>
                       <th scope="col">Estado</th>
                       <th scope="col">Prórroga</th>
@@ -298,18 +312,70 @@ export default function Seguimiento({ hoy }: { hoy: string }) {
                     {visibles.map(({ solicitud: s, evaluacion: e }) => {
                       const params = new URLSearchParams({ recepcion: s.recepcion });
                       if (s.respuesta) params.set("respuesta", s.respuesta);
+                      if (s.requerimiento) params.set("requerimiento", s.requerimiento);
+                      if (s.subsanacion) params.set("subsanacion", s.subsanacion);
+                      const resumenSubsanacion = s.subsanacion
+                        ? `Subsanó el ${formatoFecha(s.subsanacion, hoy)}`
+                        : s.requerimiento
+                          ? `Pedida el ${formatoFecha(s.requerimiento, hoy)}`
+                          : "No";
                       return (
                         <tr key={s.id} className={`fila-${e.grupo}`}>
                           <th scope="row" className="celda-folio">
                             {s.folio}
                           </th>
                           <td data-etiqueta="Recepción">{formatoFecha(s.recepcion, hoy)}</td>
+                          <td data-etiqueta="Subsanación">
+                            <details className="celda-subsanacion">
+                              <summary aria-label={`Subsanación de ${s.folio}: ${resumenSubsanacion}`}>
+                                {resumenSubsanacion}
+                              </summary>
+                              <label>
+                                <span>Requerimiento notificado</span>
+                                <input
+                                  type="date"
+                                  className="fecha-celda"
+                                  value={s.requerimiento ?? ""}
+                                  min={s.recepcion}
+                                  onChange={(ev) =>
+                                    actualizar(s.id, { requerimiento: fechaDesde(ev.target.value, s.recepcion) })
+                                  }
+                                />
+                              </label>
+                              <label>
+                                <span>Subsanó el</span>
+                                <input
+                                  type="date"
+                                  className="fecha-celda"
+                                  value={s.subsanacion ?? ""}
+                                  min={s.requerimiento}
+                                  disabled={!s.requerimiento}
+                                  onChange={(ev) =>
+                                    actualizar(s.id, {
+                                      subsanacion: s.requerimiento
+                                        ? fechaDesde(ev.target.value, s.requerimiento)
+                                        : undefined,
+                                    })
+                                  }
+                                />
+                              </label>
+                            </details>
+                          </td>
                           <td data-etiqueta="Vence">
-                            {formatoFecha(e.vence, hoy)}
-                            {s.prorrogada && <span className="nota-celda">con prórroga</span>}
+                            {e.vence ? (
+                              <>
+                                {formatoFecha(e.vence, hoy)}
+                                {s.prorrogada && <span className="nota-celda">con prórroga</span>}
+                                {s.subsanacion && <span className="nota-celda">desde la subsanación</span>}
+                              </>
+                            ) : (
+                              <span className="nota-celda sin-plazo">Aún no corre</span>
+                            )}
                           </td>
                           <td data-etiqueta="Estado">
-                            <span className={`pastilla pastilla-${e.grupo}`}>{ESTADO[e.grupo]}</span>
+                            <span className={`pastilla pastilla-${e.desistida ? "respondida" : e.grupo}`}>
+                              {textoEstado(e)}
+                            </span>
                             {e.fueraDePlazo && <span className="pastilla pastilla-vencida">Fuera de plazo</span>}
                             <span className="nota-celda">{detalleEstado(e, hoy)}</span>
                           </td>

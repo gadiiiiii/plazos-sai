@@ -59,7 +59,7 @@ main {
 }
 
 main.ancho {
-  max-width: 68rem;
+  max-width: 72rem;
 }
 
 h1,
@@ -893,7 +893,7 @@ button.peligro {
 .tabla-sai th,
 .tabla-sai td {
   text-align: left;
-  padding: 0.75rem 0.85rem;
+  padding: 0.75rem 0.6rem;
   border-bottom: 1px solid var(--linea);
   vertical-align: top;
 }
@@ -941,6 +941,7 @@ button.peligro {
 
 .pastilla {
   display: inline-block;
+  white-space: nowrap;
   font-size: 0.8125rem;
   font-weight: 600;
   padding: 0.1rem 0.5rem;
@@ -978,14 +979,20 @@ input.fecha-celda {
 
 .celda-acciones {
   white-space: nowrap;
-  text-align: right !important;
+}
+
+.celda-acciones a,
+.celda-acciones button.enlace {
+  display: block;
+  width: fit-content;
+  padding: 0.1rem 0;
 }
 
 .celda-acciones a {
   color: var(--timbre);
   font-weight: 600;
   text-underline-offset: 3px;
-  margin-right: 0.75rem;
+  margin-bottom: 0.35rem;
 }
 
 .celda-acciones button.enlace {
@@ -993,7 +1000,7 @@ input.fecha-celda {
   color: var(--vencido);
 }
 
-@media (max-width: 48rem) {
+@media (max-width: 60rem) {
   .tabla-sai thead {
     position: absolute;
     width: 1px;
@@ -1066,8 +1073,89 @@ input.fecha-celda {
     overflow-wrap: anywhere;
   }
 
-  .celda-acciones {
-    text-align: left !important;
-    padding-top: 0.6rem !important;
+  .tabla-sai .celda-acciones {
+    display: flex;
+    gap: 1.25rem;
+    padding-top: 0.6rem;
   }
+
+  .celda-acciones a {
+    margin-bottom: 0;
+  }
+}
+
+/* ── Subsanación ── */
+
+.subsanacion {
+  margin-top: 1.25rem;
+}
+
+.subsanacion summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--timbre);
+  width: fit-content;
+}
+
+.ayuda-subsanacion {
+  margin-top: 0.6rem;
+  max-width: 40rem;
+  font-size: 0.9375rem;
+  color: var(--tinta-suave);
+}
+
+.subsanacion .opcionales {
+  margin: 1rem 0 0;
+}
+
+.aviso-suelto {
+  margin-top: 1.5rem;
+}
+
+.desde-subsanacion {
+  margin-top: 1rem;
+  padding-left: 0.875rem;
+  border-left: 3px solid var(--timbre);
+  font-size: 0.9375rem;
+  color: var(--tinta-suave);
+}
+
+.leyenda strong {
+  display: inline-block;
+  width: 1rem;
+  text-align: center;
+  color: var(--tinta);
+}
+
+.celda-subsanacion summary {
+  cursor: pointer;
+  color: var(--timbre);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  white-space: nowrap;
+  width: fit-content;
+}
+
+.celda-subsanacion label {
+  display: block;
+  margin-top: 0.5rem;
+}
+
+.celda-subsanacion label span {
+  display: block;
+  font-size: 0.8125rem;
+  color: var(--tinta-suave);
+  margin-bottom: 0.15rem;
+}
+
+.sin-plazo {
+  margin-top: 0;
+}
+
+.pastilla-subsanacion { background: var(--timbre-suave); color: var(--timbre); }
+.fila-subsanacion > :first-child { border-left-color: var(--timbre) !important; }
+.filtro-subsanacion .filtro-numero { color: var(--timbre); }
+
+@media (max-width: 60rem) {
+  .fila-subsanacion { border-left-color: var(--timbre) !important; }
 }
