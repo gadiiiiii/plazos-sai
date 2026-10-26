@@ -1,0 +1,459 @@
+:root {
+  --papel: #f2f4f7;
+  --superficie: #ffffff;
+  --tinta: #1d2b3a;
+  --tinta-suave: #52606f;
+  --linea: #d3d9e0;
+  --timbre: #5b3e96;
+  --timbre-suave: #ece6f6;
+  --inhabil: #e4e8ed;
+  --rayado: #cfd5dd;
+  --alerta: #8a5300;
+  --alerta-fondo: #fbf0dc;
+  --vencido: #a3242c;
+  --vencido-fondo: #f8e3e4;
+  --ok: #1f5f45;
+  --ok-fondo: #e2f1ea;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --papel: #121a23;
+    --superficie: #19232e;
+    --tinta: #e3e8ee;
+    --tinta-suave: #9aa7b5;
+    --linea: #2c3a49;
+    --timbre: #b49bea;
+    --timbre-suave: #2d2643;
+    --inhabil: #1e2833;
+    --rayado: #2a3643;
+    --alerta: #f2bf6b;
+    --alerta-fondo: #3a2c14;
+    --vencido: #f0959b;
+    --vencido-fondo: #3d1d20;
+    --ok: #8fd3b3;
+    --ok-fondo: #173329;
+    color-scheme: dark;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--papel);
+  color: var(--tinta);
+  font-family: "Atkinson Hyperlegible Next", system-ui, sans-serif;
+  font-size: 1.0625rem;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+
+main {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 3rem 1rem 4rem;
+}
+
+h1,
+h2 {
+  margin: 0;
+  line-height: 1.15;
+}
+
+h1 {
+  font-size: 2.25rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--tinta-suave);
+}
+
+p {
+  margin: 0;
+}
+
+code {
+  font-size: 0.9em;
+  background: var(--inhabil);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+}
+
+:focus-visible {
+  outline: 3px solid var(--timbre);
+  outline-offset: 2px;
+}
+
+/* ── Cabecera ── */
+
+.cabecera p {
+  margin-top: 0.75rem;
+  max-width: 38rem;
+  color: var(--tinta-suave);
+}
+
+/* ── Formulario ── */
+
+.formulario {
+  margin-top: 2.5rem;
+}
+
+.formulario label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+.fila-campo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+input[type="date"] {
+  font: inherit;
+  font-size: 1.25rem;
+  color: var(--tinta);
+  background: var(--superficie);
+  border: 2px solid var(--linea);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  min-height: 3rem;
+}
+
+input[type="date"]:hover {
+  border-color: var(--tinta-suave);
+}
+
+.ayuda {
+  margin-top: 0.4rem;
+  font-size: 0.9375rem;
+  color: var(--tinta-suave);
+}
+
+button {
+  font: inherit;
+  font-weight: 600;
+  color: var(--tinta);
+  background: var(--superficie);
+  border: 2px solid var(--linea);
+  border-radius: 8px;
+  padding: 0.55rem 1rem;
+  min-height: 2.75rem;
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: var(--tinta);
+}
+
+button.enlace {
+  background: none;
+  border: none;
+  padding: 0.25rem;
+  min-height: auto;
+  color: var(--timbre);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── Resultado ── */
+
+.resultado {
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 2px solid var(--tinta);
+}
+
+.fechas {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 1.5rem;
+  align-items: end;
+}
+
+.fecha-grande {
+  margin-top: 0.25rem;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+
+.fecha-grande::first-letter {
+  text-transform: uppercase;
+}
+
+.secundaria .fecha-grande {
+  font-size: 1.375rem;
+  font-weight: 600;
+}
+
+.estado {
+  margin-top: 1.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.estado + .estado {
+  margin-top: 0.5rem;
+}
+
+.estado-ok {
+  background: var(--ok-fondo);
+  color: var(--ok);
+}
+
+.estado-alerta {
+  background: var(--alerta-fondo);
+  color: var(--alerta);
+}
+
+.estado-vencido {
+  background: var(--vencido-fondo);
+  color: var(--vencido);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+/* ── Calendario ── */
+
+.calendario {
+  margin-top: 3rem;
+}
+
+.calendario h2 {
+  color: var(--tinta);
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.tabla-scroll {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  min-width: 20rem;
+  border-collapse: separate;
+  border-spacing: 4px;
+  table-layout: fixed;
+}
+
+th {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--tinta-suave);
+  padding-bottom: 0.25rem;
+}
+
+td.dia {
+  position: relative;
+  height: 4rem;
+  background: var(--superficie);
+  border: 1px solid var(--linea);
+  border-radius: 6px;
+  vertical-align: top;
+  padding: 0.3rem 0.4rem;
+}
+
+.fecha-dia {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--tinta-suave);
+  white-space: nowrap;
+}
+
+.contador {
+  display: block;
+  text-align: center;
+  font-size: 1.375rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+td.inhabil {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--inhabil),
+    var(--inhabil) 5px,
+    var(--rayado) 5px,
+    var(--rayado) 6px
+  );
+  border-color: transparent;
+}
+
+td.feriado .fecha-dia {
+  color: var(--tinta);
+  font-weight: 600;
+}
+
+td.recepcion .contador {
+  color: var(--tinta-suave);
+  font-weight: 600;
+}
+
+td.prorroga {
+  background: var(--timbre-suave);
+  border-color: transparent;
+}
+
+td.prorroga .contador {
+  color: var(--timbre);
+  font-weight: 600;
+}
+
+/* El timbre: día 20 */
+td.vence {
+  background: var(--superficie);
+  border-color: var(--timbre);
+}
+
+td.vence .contador {
+  color: var(--timbre);
+}
+
+td.vence::after {
+  content: "";
+  position: absolute;
+  inset: 0.85rem 50% auto auto;
+  width: 2.6rem;
+  height: 2.6rem;
+  transform: translate(50%, 0) rotate(-8deg);
+  border: 2.5px solid var(--timbre);
+  border-radius: 50%;
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+td.vence-prorroga {
+  border: 2px dashed var(--timbre);
+  background: var(--superficie);
+}
+
+td.hoy {
+  box-shadow: 0 0 0 3px var(--tinta);
+}
+
+.leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+  font-size: 0.9375rem;
+  color: var(--tinta-suave);
+}
+
+.leyenda li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.muestra {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 4px;
+}
+
+.muestra-vence {
+  border: 2.5px solid var(--timbre);
+  border-radius: 50%;
+}
+
+.muestra-prorroga {
+  background: var(--timbre-suave);
+  border: 1px solid var(--timbre);
+}
+
+.muestra-inhabil {
+  background: repeating-linear-gradient(-45deg, var(--inhabil), var(--inhabil) 3px, var(--rayado) 3px, var(--rayado) 4px);
+  border: 1px solid var(--linea);
+}
+
+.muestra-hoy {
+  border: 3px solid var(--tinta);
+}
+
+.feriados {
+  margin-top: 1rem;
+  font-size: 0.9375rem;
+  color: var(--tinta-suave);
+  max-width: 40rem;
+}
+
+/* ── Pie ── */
+
+.pie {
+  margin-top: 3.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--linea);
+  font-size: 0.9375rem;
+  color: var(--tinta-suave);
+  max-width: 40rem;
+}
+
+.pie p + p {
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 34rem) {
+  main {
+    padding-top: 2rem;
+  }
+
+  h1 {
+    font-size: 1.875rem;
+  }
+
+  .fechas {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .fecha-grande {
+    font-size: 1.625rem;
+  }
+
+  table {
+    border-spacing: 2px;
+  }
+
+  td.dia {
+    height: 3.25rem;
+    padding: 0.2rem;
+  }
+
+  .fecha-dia {
+    font-size: 0.6875rem;
+  }
+
+  .contador {
+    font-size: 1.0625rem;
+  }
+
+  td.vence::after {
+    width: 2rem;
+    height: 2rem;
+    top: 0.75rem;
+  }
+}
