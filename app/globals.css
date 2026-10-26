@@ -457,3 +457,191 @@ td.hoy {
     top: 0.75rem;
   }
 }
+
+/* ── Hitos ── */
+
+.hitos {
+  margin-top: 3rem;
+}
+
+.hitos h2 {
+  color: var(--tinta);
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.hitos-intro {
+  margin-top: 0.5rem;
+  max-width: 40rem;
+  color: var(--tinta-suave);
+}
+
+.opcionales {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem 1.5rem;
+  margin: 1.5rem 0;
+  padding: 1rem 1.25rem;
+  background: var(--superficie);
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+}
+
+.campo-opcional label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  margin-bottom: 0.35rem;
+}
+
+.campo-opcional input[type="date"] {
+  font-size: 1rem;
+  min-height: 2.5rem;
+  padding: 0.35rem 0.6rem;
+}
+
+.campo-opcional .ayuda {
+  font-size: 0.875rem;
+}
+
+.linea-tiempo {
+  list-style: none;
+  margin: 1.5rem 0 0;
+  padding: 0;
+}
+
+.hito {
+  display: grid;
+  grid-template-columns: 6.5rem 1fr;
+  gap: 1.25rem;
+}
+
+.hito-fecha {
+  text-align: right;
+  padding-top: 0.1rem;
+}
+
+.hito-dia {
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.hito-semana {
+  display: block;
+  font-size: 0.8125rem;
+  color: var(--tinta-suave);
+}
+
+.hito-cuerpo {
+  position: relative;
+  padding: 0 0 1.75rem 1.5rem;
+  border-left: 2px solid var(--linea);
+}
+
+.hito:last-child .hito-cuerpo {
+  border-left-color: transparent;
+  padding-bottom: 0;
+}
+
+.hito-cuerpo::before {
+  content: "";
+  position: absolute;
+  left: -0.5rem;
+  top: 0.35rem;
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: 50%;
+  background: var(--papel);
+  border: 2.5px solid var(--timbre);
+}
+
+.hito-cuerpo h3 {
+  margin: 0;
+  font-size: 1.0625rem;
+  line-height: 1.3;
+}
+
+.hito-cuerpo p {
+  margin-top: 0.25rem;
+  max-width: 34rem;
+  font-size: 0.9375rem;
+  color: var(--tinta-suave);
+}
+
+.hito-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.75rem;
+  margin-top: 0.5rem !important;
+}
+
+.hito-estado {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+}
+
+.hito-estado.estado-proximo {
+  background: var(--timbre-suave);
+  color: var(--timbre);
+}
+
+.hito-estado.estado-hoy {
+  background: var(--alerta-fondo);
+  color: var(--alerta);
+}
+
+.hito-estado.estado-pasado {
+  background: var(--inhabil);
+  color: var(--tinta-suave);
+}
+
+.hito-norma {
+  font-size: 0.8125rem;
+  color: var(--tinta-suave);
+}
+
+.hito-pasado .hito-dia,
+.hito-pasado h3 {
+  color: var(--tinta-suave);
+}
+
+.hito-pasado .hito-cuerpo::before {
+  background: var(--inhabil);
+  border-color: var(--rayado);
+}
+
+.hito-hoy .hito-cuerpo::before {
+  background: var(--timbre);
+}
+
+.hitos-nota {
+  margin-top: 1.25rem;
+  max-width: 40rem;
+  font-size: 0.875rem;
+  color: var(--tinta-suave);
+}
+
+@media (max-width: 34rem) {
+  .opcionales {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+
+  .hito {
+    grid-template-columns: 4.25rem 1fr;
+    gap: 0.75rem;
+  }
+
+  .hito-dia {
+    font-size: 1.0625rem;
+  }
+
+  .hito-cuerpo {
+    padding-left: 1.1rem;
+  }
+}

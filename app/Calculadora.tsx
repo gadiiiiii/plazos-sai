@@ -9,6 +9,7 @@ import {
   DIAS_PRORROGA,
   type DiaCalendario,
 } from "@/lib/plazos";
+import Hitos from "./Hitos";
 
 const TOTAL = DIAS_PLAZO + DIAS_PRORROGA;
 const SEMANA = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
@@ -91,9 +92,13 @@ function etiquetaCelda(c: DiaCalendario) {
 export default function Calculadora({
   recepcionInicial,
   hoy,
+  terceroInicial,
+  respuestaInicial,
 }: {
   recepcionInicial: string;
   hoy: string;
+  terceroInicial: string;
+  respuestaInicial: string;
 }) {
   const [recepcion, setRecepcion] = useState(recepcionInicial);
   const [copiado, setCopiado] = useState(false);
@@ -192,6 +197,8 @@ export default function Calculadora({
               </button>
             </div>
           </section>
+
+          <Hitos recepcion={recepcion} hoy={hoy} terceroInicial={terceroInicial} respuestaInicial={respuestaInicial} />
 
           <section className="calendario" aria-labelledby="titulo-calendario">
             <h2 id="titulo-calendario">Los 30 días hábiles, uno por uno</h2>
