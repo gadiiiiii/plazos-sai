@@ -55,7 +55,11 @@ body {
 main {
   max-width: 46rem;
   margin: 0 auto;
-  padding: 3rem 1rem 4rem;
+  padding: 1.25rem 1rem 4rem;
+}
+
+main.ancho {
+  max-width: 68rem;
 }
 
 h1,
@@ -417,9 +421,6 @@ td.hoy {
 }
 
 @media (max-width: 34rem) {
-  main {
-    padding-top: 2rem;
-  }
 
   h1 {
     font-size: 1.875rem;
@@ -643,5 +644,430 @@ td.hoy {
 
   .hito-cuerpo {
     padding-left: 1.1rem;
+  }
+}
+
+/* ── Navegación ── */
+
+.navegacion {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 2.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--linea);
+}
+
+.navegacion a {
+  color: var(--tinta-suave);
+  font-weight: 600;
+  text-decoration: none;
+  padding: 0.25rem 0;
+  border-bottom: 3px solid transparent;
+  margin-bottom: calc(-0.75rem - 2px);
+  padding-bottom: 0.75rem;
+}
+
+.navegacion a:hover {
+  color: var(--tinta);
+}
+
+.navegacion a[aria-current="page"] {
+  color: var(--tinta);
+  border-bottom-color: var(--timbre);
+}
+
+/* ── Seguimiento ── */
+
+.solo-lector {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.aviso-privacidad {
+  margin-top: 1rem;
+  max-width: 44rem;
+  font-size: 0.9375rem;
+  color: var(--tinta-suave);
+  padding-left: 0.875rem;
+  border-left: 3px solid var(--timbre);
+}
+
+.agregar {
+  margin-top: 2rem;
+  padding: 1.25rem;
+  background: var(--superficie);
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+}
+
+.agregar h2,
+.bandeja h2 {
+  color: var(--tinta);
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.fila-agregar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem 1rem;
+  margin-top: 1rem;
+}
+
+.fila-agregar label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  margin-bottom: 0.35rem;
+}
+
+input[type="text"],
+textarea {
+  font: inherit;
+  color: var(--tinta);
+  background: var(--papel);
+  border: 2px solid var(--linea);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+}
+
+.fila-agregar input[type="text"] {
+  width: 16rem;
+  max-width: 100%;
+  min-height: 2.75rem;
+}
+
+.fila-agregar input[type="date"] {
+  font-size: 1rem;
+  min-height: 2.75rem;
+  padding: 0.35rem 0.6rem;
+  background: var(--papel);
+}
+
+input[type="text"]:hover,
+textarea:hover {
+  border-color: var(--tinta-suave);
+}
+
+button.primario {
+  background: var(--tinta);
+  border-color: var(--tinta);
+  color: var(--papel);
+}
+
+button.primario:hover {
+  background: var(--timbre);
+  border-color: var(--timbre);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+button.peligro {
+  color: var(--vencido);
+}
+
+.pegar {
+  margin-top: 1.25rem;
+}
+
+.pegar summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--timbre);
+  width: fit-content;
+}
+
+.pegar label {
+  display: block;
+  margin: 0.75rem 0 0.5rem;
+  max-width: 40rem;
+  font-size: 0.9375rem;
+  color: var(--tinta-suave);
+}
+
+.pegar textarea {
+  display: block;
+  width: 100%;
+  max-width: 36rem;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.9375rem;
+  tab-size: 16;
+  margin-bottom: 0.75rem;
+}
+
+.agregar .estado {
+  margin-top: 1rem;
+}
+
+.agregar .estado p + p {
+  margin-top: 0.25rem;
+  font-weight: 400;
+}
+
+.bandeja {
+  margin-top: 2.5rem;
+}
+
+.bandeja-cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.bandeja-cabecera .acciones {
+  margin-top: 0;
+}
+
+.deshacer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.deshacer .enlace {
+  color: inherit;
+}
+
+.vacio-texto {
+  margin-top: 1.25rem;
+  color: var(--tinta-suave);
+}
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1.25rem 0 1rem;
+}
+
+.filtros button {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-weight: 600;
+  min-height: 2.5rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+}
+
+.filtro-numero {
+  font-size: 1.125rem;
+  font-weight: 800;
+}
+
+.filtros button[aria-pressed="true"] {
+  background: var(--tinta);
+  border-color: var(--tinta);
+  color: var(--papel);
+}
+
+.filtro-vencida .filtro-numero { color: var(--vencido); }
+.filtro-pronto .filtro-numero { color: var(--alerta); }
+.filtro-al-dia .filtro-numero { color: var(--ok); }
+.filtro-respondida .filtro-numero { color: var(--tinta-suave); }
+.filtros button[aria-pressed="true"] .filtro-numero { color: inherit; }
+
+.tabla-sai {
+  width: 100%;
+  min-width: 0;
+  table-layout: auto;
+  border-collapse: collapse;
+  border-spacing: 0;
+  background: var(--superficie);
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.tabla-sai th,
+.tabla-sai td {
+  text-align: left;
+  padding: 0.75rem 0.85rem;
+  border-bottom: 1px solid var(--linea);
+  vertical-align: top;
+}
+
+.tabla-sai thead th {
+  font-size: 0.8125rem;
+  background: var(--papel);
+}
+
+.tabla-sai tbody tr:last-child > * {
+  border-bottom: none;
+}
+
+.tabla-sai tbody tr > :first-child {
+  border-left: 4px solid transparent;
+}
+
+.fila-vencida > :first-child { border-left-color: var(--vencido) !important; }
+.fila-pronto > :first-child { border-left-color: var(--alerta) !important; }
+.fila-al-dia > :first-child { border-left-color: var(--ok) !important; }
+.fila-respondida > :first-child { border-left-color: var(--rayado) !important; }
+
+.fila-respondida {
+  color: var(--tinta-suave);
+}
+
+.tabla-sai .celda-folio {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--tinta);
+  padding-bottom: 0.75rem;
+  white-space: nowrap;
+}
+
+.fila-respondida .celda-folio {
+  color: var(--tinta-suave);
+}
+
+.nota-celda {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.8125rem;
+  color: var(--tinta-suave);
+}
+
+.pastilla {
+  display: inline-block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  margin: 0 0.25rem 0.1rem 0;
+}
+
+.pastilla-vencida { background: var(--vencido-fondo); color: var(--vencido); }
+.pastilla-pronto { background: var(--alerta-fondo); color: var(--alerta); }
+.pastilla-al-dia { background: var(--ok-fondo); color: var(--ok); }
+.pastilla-respondida { background: var(--inhabil); color: var(--tinta-suave); }
+
+.casilla {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  font-size: 0.9375rem;
+  min-height: 1.75rem;
+}
+
+.casilla input {
+  width: 1.125rem;
+  height: 1.125rem;
+  accent-color: var(--timbre);
+}
+
+input.fecha-celda {
+  font-size: 0.9375rem;
+  min-height: 2.25rem;
+  padding: 0.2rem 0.4rem;
+  border-width: 1px;
+  background: var(--papel);
+}
+
+.celda-acciones {
+  white-space: nowrap;
+  text-align: right !important;
+}
+
+.celda-acciones a {
+  color: var(--timbre);
+  font-weight: 600;
+  text-underline-offset: 3px;
+  margin-right: 0.75rem;
+}
+
+.celda-acciones button.enlace {
+  font-weight: 600;
+  color: var(--vencido);
+}
+
+@media (max-width: 48rem) {
+  .tabla-sai thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .tabla-sai,
+  .tabla-sai tbody,
+  .tabla-sai tr,
+  .tabla-sai th,
+  .tabla-sai td {
+    display: block;
+  }
+
+  .tabla-sai {
+    background: none;
+    border: none;
+  }
+
+  .tabla-sai tbody tr {
+    background: var(--superficie);
+    border: 1px solid var(--linea);
+    border-left-width: 4px;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    padding: 0.5rem 0;
+  }
+
+  .fila-vencida { border-left-color: var(--vencido) !important; }
+  .fila-pronto { border-left-color: var(--alerta) !important; }
+  .fila-al-dia { border-left-color: var(--ok) !important; }
+  .fila-respondida { border-left-color: var(--rayado) !important; }
+
+  .tabla-sai tbody tr > :first-child {
+    border-left: none !important;
+  }
+
+  .tabla-sai th,
+  .tabla-sai td {
+    border: none;
+    padding: 0.35rem 1rem;
+  }
+
+  .tabla-sai td[data-etiqueta] {
+    display: grid;
+    grid-template-columns: 6.5rem 1fr;
+    gap: 0.75rem;
+    align-items: start;
+  }
+
+  .tabla-sai td[data-etiqueta]::before {
+    content: attr(data-etiqueta);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--tinta-suave);
+    padding-top: 0.1rem;
+  }
+
+  .tabla-sai td[data-etiqueta] > * {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .tabla-sai .celda-folio {
+    font-size: 1.0625rem;
+    padding-top: 0.5rem;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .celda-acciones {
+    text-align: left !important;
+    padding-top: 0.6rem !important;
   }
 }

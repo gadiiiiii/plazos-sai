@@ -13,6 +13,8 @@ Ingresas la fecha de recepción y obtienes:
 - Un calendario con los 30 días hábiles numerados, fines de semana y feriados marcados.
 - Texto listo para copiar y un archivo `.ics` para agregar ambos vencimientos a tu calendario.
 
+También tiene una página de **seguimiento** para llevar varias SAI a la vez, ordenadas por urgencia.
+
 ![Captura de la calculadora](docs/captura.png)
 
 ## Cómo se cuenta el plazo
@@ -38,6 +40,19 @@ Ingresas la fecha de recepción y obtienes:
 Los hitos opcionales aparecen al ingresar la fecha de entrega de la carta en Correos o la de notificación de la respuesta. El art. 24 dice "quince días" sin precisar; se cuentan hábiles por tratarse de un procedimiento administrativo.
 
 ![Hitos del procedimiento](docs/hitos.png)
+
+## Seguimiento de varias solicitudes
+
+En `/seguimiento` puedes llevar todas las SAI en trámite:
+
+- Agrega una por una (folio y fecha de recepción) o **pega varias filas desde Excel**. Acepta columnas separadas por tabulación, punto y coma o coma, fechas como `05-10-2026`, `5/10/2026` o `2026-10-05`, y una tercera columna opcional con la fecha de respuesta. Omite el encabezado y los folios repetidos, e indica qué líneas no pudo leer.
+- Se ordenan por urgencia: **vencidas**, **vencen pronto** (5 días hábiles o menos), **al día** y **respondidas**. Los contadores sirven de filtro.
+- Marca si se prorrogó y la fecha de respuesta. Las respondidas muestran hasta cuándo hay plazo de amparo y si se respondió fuera de plazo.
+- **Exporta a CSV** con punto y coma y fechas `DD-MM-AAAA`, para que Excel en español lo abra en columnas.
+
+La lista se guarda en el `localStorage` del navegador: no hay servidor ni base de datos, y no se piden nombres ni datos personales, solo el folio.
+
+![Seguimiento de solicitudes](docs/seguimiento.png)
 
 ## API
 
@@ -78,7 +93,7 @@ Una fecha inválida devuelve `400` con un mensaje de error.
 - [Next.js](https://nextjs.org) (App Router) + TypeScript
 - [Vitest](https://vitest.dev) para los tests de la lógica de días hábiles y de los hitos
 - GitHub Actions corre los tests y el build en cada push
-- Sin base de datos: el cálculo vive en [`lib/plazos.ts`](lib/plazos.ts) y [`lib/hitos.ts`](lib/hitos.ts)
+- Sin base de datos: la lógica vive en [`lib/plazos.ts`](lib/plazos.ts), [`lib/hitos.ts`](lib/hitos.ts) y [`lib/seguimiento.ts`](lib/seguimiento.ts), separada de la interfaz y cubierta por tests
 
 ## Desarrollo local
 

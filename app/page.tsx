@@ -1,4 +1,5 @@
 import Calculadora from "./Calculadora";
+import Navegacion from "./Navegacion";
 import { esFechaValida, hoyEnChile } from "@/lib/plazos";
 
 export const dynamic = "force-dynamic";
@@ -14,6 +15,7 @@ export default async function Page({
 
   return (
     <main>
+      <Navegacion />
       <header className="cabecera">
         <h1>Plazos SAI</h1>
         <p>
